@@ -41,7 +41,7 @@ class ServerTest < Test::Unit::TestCase
   
   def test_controller_respects_log_level
     remote = <<-CODE
-    RAILS_DEFAULT_LOGGER.level = Logger::INFO;
+    Rails.logger.level = Logger::INFO;
     Interlock.config[:log_level] = 'info'
     CODE
     remote_eval(remote)

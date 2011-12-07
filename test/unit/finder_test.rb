@@ -127,8 +127,8 @@ class FinderTest < Test::Unit::TestCase
   end
   
   def test_custom_log_level
-    old_level = RAILS_DEFAULT_LOGGER.level
-    RAILS_DEFAULT_LOGGER.level = Logger::INFO
+    old_level = Rails.logger.level
+    Rails.logger.level = Logger::INFO
 
     Interlock.config[:log_level] = 'info'
     truncate
@@ -140,7 +140,7 @@ class FinderTest < Test::Unit::TestCase
     Item.find(1)
     assert_no_match(/model.*Item:find:1:default is loading/, log)
   ensure
-    RAILS_DEFAULT_LOGGER.level = old_level
+    Rails.logger.level = old_level
   end
   
   def test_find_with_nonstandard_primary_key

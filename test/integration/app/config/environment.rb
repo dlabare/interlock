@@ -9,11 +9,11 @@ Rails::Initializer.run do |config|
   end
     
   #  config.to_prepare do     
-  #    RAILS_DEFAULT_LOGGER.info "** interlock dependencies:"
+  #    Rails.logger.info "** interlock dependencies:"
   #    Interlock.dependencies.each do |klass, list|
-  #      RAILS_DEFAULT_LOGGER.info "    #{klass}:"
+  #      Rails.logger.info "    #{klass}:"
   #      list.each do |key, scope|
-  #        RAILS_DEFAULT_LOGGER.info "      #{key} => #{scope.inspect}"
+  #        Rails.logger.info "      #{key} => #{scope.inspect}"
   #      end
   #    end
   #  end

@@ -107,7 +107,7 @@ module Interlock
         log_method = :debug
       end
       
-      RAILS_DEFAULT_LOGGER.send( log_method, msg )
+      Rails.logger.send( log_method, msg )
     end
 
     #   
