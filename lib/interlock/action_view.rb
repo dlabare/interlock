@@ -38,7 +38,7 @@ It's fine to use a <tt>view_cache</tt> block without a <tt>behavior_cache</tt> b
 See ActionController::Base for explanations of the rest of the options. The <tt>view_cache</tt> and <tt>behavior_cache</tt> APIs are identical except for setting the <tt>:ttl</tt>, which can only be done in the view, and the default dependency, which is only set by <tt>behavior_cache</tt>.
 
 =end     
-     def view_cache(*args, &block)       
+     def view_cache(*args, &block)
        # conventional_class = begin; controller.controller_name.classify.constantize; rescue NameError; end
        options, dependencies = Interlock.extract_options_and_dependencies(args, nil)  
 
@@ -79,19 +79,27 @@ See ActionController::Base for explanations of the rest of the options. The <tt>
     module CaptureHelper
       #
       # Override content_for so we can cache the instance variables it sets along with the fragment.
-      #
+      #      
       def content_for(name, content = nil, &block)
-        ivar = "@content_for_#{name}"
-        existing_content = instance_variable_get(ivar).to_s
-        this_content = (block_given? ? capture(&block) : content)
-        
-        # If we are in a view_cache block, cache what we added to this instance variable
-        if @cached_content_for
-          @cached_content_for[name] = "#{@cached_content_for[name]}#{this_content}"
+        if content || block_given?
+          content = capture(&block) if block_given?
+          
+          if content
+            @view_flow.append(name, content)
+
+            # If we are in a view_cache block, cache what we added to this instance variable
+            if @cached_content_for
+              @cached_content_for[name] = "#{@cached_content_for[name]}#{content}"
+            end
+          end
+          
+          nil
+        else
+          @view_flow.get(name)
         end
-        
-        instance_variable_set(ivar, existing_content + this_content)
-      end    
+      end
+      
+      
     end
 
   end

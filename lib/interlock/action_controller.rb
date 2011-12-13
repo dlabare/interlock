@@ -141,6 +141,33 @@ And in the <tt>show.html.erb</tt> view:
       end
     end
     
+    def cache_rjs(*args)
+      conventional_class = begin; controller_name.classify.constantize; rescue NameError; end
+      options, dependencies = Interlock.extract_options_and_dependencies(args, nil)
+
+      Interlock.say "caching rjs: ", "#{options.inspect} -- #{dependencies.inspect}"
+
+      key = caching_key(options.value_for_indifferent_key(:ignore), options.value_for_indifferent_key(:tag))      
+      Interlock.say "caching rjs: ", "#{key}"
+
+      if options[:perform] == false || Interlock.config[:disabled]
+        Interlock.say key, "is not cached"
+        yield
+      else
+        raise Interlock::UsageError, "you must include the rjs template to render" if options[:template].blank?
+        # See if the fragment exists, and run the block if it doesn't.
+        
+        if response = read_fragment(key, :assign_content_for => false)
+          render :text => response
+        else
+          # if there's nothing in 
+          Interlock.say key, "is running the rjs template"
+          write_fragment key, render(:template => options[:template]), :ttl => (options.value_for_indifferent_key(:ttl) or Interlock.config[:ttl])
+        end
+      end
+    end
+    
+    
     #:stopdoc:
     alias :caching :behavior_cache # Deprecated
     #:startdoc:

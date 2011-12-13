@@ -5,7 +5,7 @@ module Interlock
     :ttl => 1.day,
     :namespace => 'app',
     :servers => ['127.0.0.1:11211'],
-    :client => 'memcache-client',
+    :client => 'memcached',
     :with_finders => false
   }    
   
@@ -57,7 +57,7 @@ module Interlock
         end
 
         install_memcached
-        install_fragments        
+        # install_fragments        
 
         # Always install the finders.
         install_finders if Interlock.config[:with_finders]
@@ -132,28 +132,28 @@ module Interlock
         end
       end
       
-      #
-      # Configure Rails to use the memcached store for fragments, and optionally, sessions.
-      #    
-      def install_fragments
-        # Memcached fragment caching is mandatory        
-        ActionView::Helpers::CacheHelper.class_eval do
-          def cache(name = {}, options = nil, &block)
-            # Things explode if options does not default to nil
-            Rails.logger.debug "** fragment #{name} stored via obsolete cache() call"
-            @controller.fragment_for(output_buffer, name, options, &block)
-          end
-        end                
-        ActionController::Base.cache_store = CACHE
-  
-        # Sessions are optional
-        if Interlock.config[:sessions]
-          # XXX Right now this requires memcache-client to be installed, due to a Rails problem.
-          # http://dev.rubyonrails.org/ticket/11290
-          ActionController::Base.session_store = :mem_cache_store
-          ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS.update 'cache' => CACHE      
-        end      
-      end    
+      # #
+      # # Configure Rails to use the memcached store for fragments, and optionally, sessions.
+      # #    
+      # def install_fragments
+      #   # Memcached fragment caching is mandatory        
+      #   ActionView::Helpers::CacheHelper.class_eval do
+      #     def cache(name = {}, options = nil, &block)
+      #       # Things explode if options does not default to nil
+      #       Rails.logger.debug "** fragment #{name} stored via obsolete cache() call"
+      #       controller.fragment_for(output_buffer, name, options, &block)
+      #     end
+      #   end                
+      #   ActionController::Base.cache_store = CACHE
+      #   
+      #   # Sessions are optional
+      #   if Interlock.config[:sessions]
+      #     # XXX Right now this requires memcache-client to be installed, due to a Rails problem.
+      #     # http://dev.rubyonrails.org/ticket/11290
+      #     ActionController::Base.session_store = :mem_cache_store
+      #     ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS.update 'cache' => CACHE      
+      #   end      
+      # end    
       
       #
       # Configure ActiveRecord#find caching.

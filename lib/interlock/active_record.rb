@@ -23,7 +23,7 @@ module ActiveRecord #:nodoc:
     # The expiry callback.
     #
     def expire_interlock_keys
-      return if Interlock.config[:disabled] or (defined? CGI::Session::ActiveRecordStore and is_a? CGI::Session::ActiveRecordStore::Session)
+      return if Interlock.config[:disabled] or (defined?(ActiveRecord::SessionStore::Session) and is_a?(ActiveRecord::SessionStore::Session))
       
       # Fragments
       self.expire_interlock_keys_for_dependency(Interlock.dependency_key(self.class.base_class, :all, nil))
