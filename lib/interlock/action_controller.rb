@@ -189,69 +189,69 @@ And in the <tt>show.html.erb</tt> view:
   
   module Caching #:nodoc:
     module Fragments
-       
-      #
-      # Replaces Rail's write_fragment method. Avoids extra checks for regex keys 
-      # which are unsupported, adds more detailed logging information, stores writes 
-      # in the local process cache too to avoid duplicate memcached requests, and
-      # includes the content_for cache in the fragment.
-      #
-      def write_fragment(key, block_content, options = nil)
-        return unless perform_caching
-        
-        content = [block_content, @template.cached_content_for]
 
-        cache_store.write(key, content, options)
-        Interlock.local_cache.write(key, content, options)
-
-        Interlock.say key, "wrote"
-
-        block_content
-      end
-
-      #
-      # Replaces Rail's read_fragment method. Avoids checks for regex keys, 
-      # which are unsupported, adds more detailed logging information, checks 
-      # the local process cache before hitting memcached, and restores the
-      # content_for cache. Hits on memcached are also stored back locally to 
-      # avoid duplicate requests.
-      #
-      def read_fragment(key, options = nil)
-        return unless perform_caching
-        
-        begin
-          if content = Interlock.local_cache.read(key, options)
-            # Interlock.say key, "read from local cache"
-          elsif content = cache_store.read(key, options)                    
-            raise Interlock::FragmentConsistencyError, "#{key} expected Array but got #{content.class}" unless content.is_a? Array
-            Interlock.say key, "read from memcached"
-            Interlock.local_cache.write(key, content, options)
-          else
-            # Not found
-            return nil 
-          end
-          
-          raise Interlock::FragmentConsistencyError, "#{key}::content expected String but got #{content.first.class}" unless content.first.is_a? String
-  
-          options ||= {}
-          # Note that 'nil' is considered true for :assign_content_for
-          if options[:assign_content_for] != false and content.last 
-            # Extract content_for variables
-            content.last.each do |name, value| 
-              raise Interlock::FragmentConsistencyError, "#{key}::content_for(:#{name}) expected String but got #{value.class}" unless value.is_a? String
-              # We'll just call the helper because that will handle nested view_caches properly.
-              @template.send(:content_for, name, value)
-            end
-          end
-  
-          content.first
-        rescue Interlock::FragmentConsistencyError => e
-          # Delete the bogus key
-          Interlock.invalidate(key)
-          # Reraise the error
-          raise e
-        end      
-      end
+    # TODO: maybe add this back for content for shits
+    #   #
+    #   # Replaces Rail's write_fragment method. Avoids extra checks for regex keys 
+    #   # which are unsupported, adds more detailed logging information, stores writes 
+    #   # in the local process cache too to avoid duplicate memcached requests, and
+    #   # includes the content_for cache in the fragment.
+    #   #
+    #   def write_fragment(key, block_content, options = nil)
+    #     return unless perform_caching
+    #     content = [block_content, @template.cached_content_for]
+    # 
+    #     cache_store.write(key, content, options)
+    #     Interlock.local_cache.write(key, content, options)
+    # 
+    #     Interlock.say key, "wrote"
+    # 
+    #     block_content
+    #   end
+    # 
+    #   #
+    #   # Replaces Rail's read_fragment method. Avoids checks for regex keys, 
+    #   # which are unsupported, adds more detailed logging information, checks 
+    #   # the local process cache before hitting memcached, and restores the
+    #   # content_for cache. Hits on memcached are also stored back locally to 
+    #   # avoid duplicate requests.
+    #   #
+    #   def read_fragment(key, options = nil)
+    #     return unless perform_caching
+    #     
+    #     begin
+    #       if content = Interlock.local_cache.read(key, options)
+    #         # Interlock.say key, "read from local cache"
+    #       elsif content = cache_store.read(key, options)                    
+    #         raise Interlock::FragmentConsistencyError, "#{key} expected Array but got #{content.class}" unless content.is_a? Array
+    #         Interlock.say key, "read from memcached"
+    #         Interlock.local_cache.write(key, content, options)
+    #       else
+    #         # Not found
+    #         return nil 
+    #       end
+    #       
+    #       raise Interlock::FragmentConsistencyError, "#{key}::content expected String but got #{content.first.class}" unless content.first.is_a? String
+    #   
+    #       options ||= {}
+    #       # Note that 'nil' is considered true for :assign_content_for
+    #       if options[:assign_content_for] != false and content.last 
+    #         # Extract content_for variables
+    #         content.last.each do |name, value| 
+    #           raise Interlock::FragmentConsistencyError, "#{key}::content_for(:#{name}) expected String but got #{value.class}" unless value.is_a? String
+    #           # We'll just call the helper because that will handle nested view_caches properly.
+    #           @template.send(:content_for, name, value)
+    #         end
+    #       end
+    #   
+    #       content.first
+    #     rescue Interlock::FragmentConsistencyError => e
+    #       # Delete the bogus key
+    #       Interlock.invalidate(key)
+    #       # Reraise the error
+    #       raise e
+    #     end      
+    #   end
       
     end
     
