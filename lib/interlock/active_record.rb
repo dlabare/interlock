@@ -53,7 +53,7 @@ module ActiveRecord #:nodoc:
     def expire_interlock_keys_for_dependency(dependency_key)
       (CACHE.get(dependency_key) || {}).each do |key, scope|
         Interlock.say key, "invalidated by rule #{self.class} -> #{scope.inspect}."
-        Interlock.invalidate key
+        Interlock.invalidate key.dup
       end      
     end
     
